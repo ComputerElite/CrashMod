@@ -1,0 +1,47 @@
+{
+  "id": "CrashMod",
+  "name": "Crash Mod",
+  "version": "0.1.0",
+  "author": "ComputerElite",
+  "description": [
+    "Crashes the game if you are bad"
+  ],
+  "category": "Gameplay",
+  "gameVersion": "1.13.2",
+  "platform": "Quest",
+  "components": [
+    {
+      "type": "HookMod",
+      "installAction": {
+        "installLibraryFile": "libCrashMod_0_1_0.so"
+      },
+      "uninstallAction": {
+        "removeLibraryFile": "libCrashMod_0_1_0.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libbeatsaber-hook_1_0_10.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libcustom-types.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libquestui.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libcodegen_0_6_1.so"
+      }
+    }
+  ]
+}
