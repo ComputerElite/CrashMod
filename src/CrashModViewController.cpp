@@ -110,7 +110,7 @@ void CrashModViewController::DidActivate(bool firstActivation, bool addedToHiera
         auto CrashOnTurnChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
                    classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnTurnChange);
         UnityEngine::UI::Toggle* CrashOnTurn = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on Turn", getConfig().config["CrashOnTurn"].GetBool(), CrashOnTurnChange);
-        QuestUI::BeatSaberUI::AddHoverHint(CrashOnPlay->get_gameObject(), "Crashes the game when you turn around");
+        QuestUI::BeatSaberUI::AddHoverHint(CrashOnTurn->get_gameObject(), "Crashes the game when you turn around in a song");
 
         // CrashOnPause
         /*

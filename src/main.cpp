@@ -12,11 +12,14 @@
 #include "GlobalNamespace/PlayerTransforms.hpp"
 #include "GlobalNamespace/PauseController.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
+#include "GlobalNamespace/FPSCounter.hpp"
+#include "GlobalNamespace/FPSCounterUIController.hpp"
 
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 
 #include "UnityEngine/UI/Image.hpp"
 #include "UnityEngine/Application.hpp"
+#include "UnityEngine/Resources.hpp"
 
 #include "CrashModViewController.hpp"
 
@@ -55,10 +58,6 @@ void Crash() {
     }
 }
 
-MAKE_HOOK_OFFSETLESS(ScoreController_Update, void, ScoreController* self) {
-    ScoreController_Update(self);
-}
-
 MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasMissed, void, ScoreController* self, NoteController* note) {
     if(getConfig().config["Active"].GetBool()) {
         if(getConfig().config["MissCrash"].GetBool()) CRASH_UNLESS(false);
@@ -67,6 +66,7 @@ MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasMissed, void, ScoreController*
 }
 
 MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
+    RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank(self, score, modifiedscore, maxscore, maxmodfifiedscore);
     if(getConfig().config["Active"].GetBool()) {
 
         float percentage = self->get_relativeScore();
@@ -75,16 +75,15 @@ MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAnd
             if(percentage < getConfig().config["Percentage"].GetFloat()) Crash();
         }
     }
-    RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank(self, score, modifiedscore, maxscore, maxmodfifiedscore);
 }
 
-MAKE_HOOK_OFFSETLESS(StandardLevelScenesTransitionSetupDataSO_Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
+MAKE_HOOK_OFFSETLESS(StandardLevelScenesTransitionSetupDataSO_Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, IDifficultyBeatmap* dbm, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
+    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
     if(getConfig().config["Active"].GetBool()) {
         if(getConfig().config["CrashOnPlay"].GetBool()) {
             Crash();
         }
     }
-    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerTransforms_Update, void, PlayerTransforms* self) {
@@ -205,7 +204,6 @@ extern "C" void load() {
     // Register our mod settings menu
     QuestUI::Register::RegisterModSettingsViewController<CrashMod::CrashModViewController*>(modInfo);
     // Install our hooks
-    INSTALL_HOOK_OFFSETLESS(logger, ScoreController_Update, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(logger, PlayerTransforms_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(logger, ScoreController_HandleNoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "HandleNoteWasMissed", 1));
     INSTALL_HOOK_OFFSETLESS(logger, RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, il2cpp_utils::FindMethodUnsafe("", "RelativeScoreAndImmediateRankCounter", "UpdateRelativeScoreAndImmediateRank", 4));

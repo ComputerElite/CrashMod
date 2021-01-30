@@ -1,0 +1,94 @@
+{
+  "config": {
+    "sharedDir": "shared",
+    "dependenciesDir": "extern",
+    "info": {
+      "name": "Crash Mod",
+      "id": "CrashMod",
+      "version": "0.1.0",
+      "url": null,
+      "additionalData": {}
+    },
+    "dependencies": [
+      {
+        "id": "beatsaber-hook",
+        "versionRange": "*",
+        "additionalData": {
+          "extraFiles": [
+            "src/inline-hook"
+          ]
+        }
+      },
+      {
+        "id": "codegen",
+        "versionRange": "*",
+        "additionalData": {}
+      },
+      {
+        "id": "questui",
+        "versionRange": "*",
+        "additionalData": {}
+      },
+      {
+        "id": "custom-types",
+        "versionRange": "*",
+        "additionalData": {}
+      }
+    ],
+    "additionalData": {}
+  },
+  "restoredDependencies": [
+    {
+      "dependency": {
+        "id": "beatsaber-hook",
+        "versionRange": "*",
+        "additionalData": {
+          "extraFiles": [
+            "src/inline-hook"
+          ]
+        }
+      },
+      "version": "1.0.9"
+    },
+    {
+      "dependency": {
+        "id": "modloader",
+        "versionRange": "^1.0.0",
+        "additionalData": {}
+      },
+      "version": "1.0.4"
+    },
+    {
+      "dependency": {
+        "id": "libil2cpp",
+        "versionRange": "0.1.2",
+        "additionalData": {}
+      },
+      "version": "0.1.2"
+    },
+    {
+      "dependency": {
+        "id": "codegen",
+        "versionRange": "*",
+        "additionalData": {}
+      },
+      "version": "0.5.3"
+    },
+    {
+      "dependency": {
+        "id": "questui",
+        "versionRange": "*",
+        "additionalData": {}
+      },
+      "version": "0.3.1"
+    },
+    {
+      "dependency": {
+        "id": "custom-types",
+        "versionRange": "^0.4.0",
+        "additionalData": {}
+      },
+      "version": "0.4.0"
+    }
+  ]
+}
