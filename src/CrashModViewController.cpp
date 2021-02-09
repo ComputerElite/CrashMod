@@ -64,6 +64,22 @@ void onOnCrashActionChange(CrashModViewController* self, bool newValue)   {
     getConfig().config["OnCrashAction"].SetInt(newValue ? 1 : 0);
 }
 
+void onCrashOnGoodCutChange(CrashModViewController* self, bool newValue)   {
+    getConfig().config["CrashOnGoodCut"].SetBool(newValue);
+}
+
+void onCrashOnOver5PerBatteryChange(CrashModViewController* self, bool newValue)   {
+    getConfig().config["CrashOnOver5PerBattery"].SetBool(newValue);
+}
+
+void onCrashOnNoFailOnChange(CrashModViewController* self, bool newValue)   {
+    getConfig().config["CrashOnNoFailOn"].SetBool(newValue);
+}
+
+void onBatteryThresholdChange(CrashModViewController* self, float newValue)   {
+    getConfig().config["BatteryThreshold"].SetFloat(newValue / 100.0f);
+}
+
 void onCrashNow(CrashModViewController* self)  {
     getConfig().config["CrashCounter"].SetInt(getConfig().config["CrashCounter"].GetInt() + 1);
     getConfig().Write();
@@ -100,6 +116,12 @@ void CrashModViewController::DidActivate(bool firstActivation, bool addedToHiera
         UnityEngine::UI::Toggle* MissCrash = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on Miss", getConfig().config["MissCrash"].GetBool(), MissCrashChange);
         QuestUI::BeatSaberUI::AddHoverHint(MissCrash->get_gameObject(), "Crashes the game on a miss");
 
+        // CrashOnGoodCut
+        auto CrashOnGoodCutChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
+                   classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnGoodCutChange);
+        UnityEngine::UI::Toggle* CrashOnGoodCut = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on good cut", getConfig().config["CrashOnGoodCut"].GetBool(), CrashOnGoodCutChange);
+        QuestUI::BeatSaberUI::AddHoverHint(CrashOnGoodCut->get_gameObject(), "Well it crashes the game if you do a good cut");
+
         // CrashOnPlay
         auto CrashOnPlayChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
                    classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnPlayChange);
@@ -111,6 +133,25 @@ void CrashModViewController::DidActivate(bool firstActivation, bool addedToHiera
                    classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnTurnChange);
         UnityEngine::UI::Toggle* CrashOnTurn = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on Turn", getConfig().config["CrashOnTurn"].GetBool(), CrashOnTurnChange);
         QuestUI::BeatSaberUI::AddHoverHint(CrashOnTurn->get_gameObject(), "Crashes the game when you turn around in a song");
+
+        // CrashOnNoFailOn
+        auto CrashOnNoFailOnChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
+                   classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnNoFailOnChange);
+        UnityEngine::UI::Toggle* CrashOnNoFailOn = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash if you start a level with no fail", getConfig().config["CrashOnNoFailOn"].GetBool(), CrashOnNoFailOnChange);
+        QuestUI::BeatSaberUI::AddHoverHint(CrashOnNoFailOn->get_gameObject(), "No fail is a great feature (especially for torture). So why don't just let you no do it at all?");
+
+
+        // BatteryThreshold
+        auto BatteryThresholdChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<float>*>(
+                    classof(UnityEngine::Events::UnityAction_1<float>*), this, onBatteryThresholdChange);
+        QuestUI::IncrementSetting* BatteryThreshold = QuestUI::BeatSaberUI::CreateIncrementSetting(container->get_transform(), "Battery threshold", 0, 1.0, getConfig().config["BatteryThreshold"].GetFloat() * 100.0f, 0.0f, 100.0f, BatteryThresholdChange);
+        QuestUI::BeatSaberUI::AddHoverHint(BatteryThreshold->get_gameObject(), "Under this percentage your game will crash.");
+
+        // CrashOnOver5PerBattery
+        auto CrashOnOver5PerBatteryChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
+                   classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnOver5PerBatteryChange);
+        UnityEngine::UI::Toggle* CrashOnOver5PerBattery = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash the game if you have more battery life than the threshold above", getConfig().config["CrashOnOver5PerBattery"].GetBool(), CrashOnOver5PerBatteryChange);
+        QuestUI::BeatSaberUI::AddHoverHint(CrashOnOver5PerBattery->get_gameObject(), "You'll have to play Beat Saber while your Quest dies");
 
         // CrashOnPause
         /*

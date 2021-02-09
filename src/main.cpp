@@ -12,14 +12,14 @@
 #include "GlobalNamespace/PlayerTransforms.hpp"
 #include "GlobalNamespace/PauseController.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
-#include "GlobalNamespace/FPSCounter.hpp"
-#include "GlobalNamespace/FPSCounterUIController.hpp"
+#include "GlobalNamespace/OVRPlugin_OVRP_1_1_0.hpp"
 
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 
 #include "UnityEngine/UI/Image.hpp"
 #include "UnityEngine/Application.hpp"
 #include "UnityEngine/Resources.hpp"
+#include "UnityEngine/SceneManagement/Scene.hpp"
 
 #include "CrashModViewController.hpp"
 
@@ -59,10 +59,17 @@ void Crash() {
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasMissed, void, ScoreController* self, NoteController* note) {
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["MissCrash"].GetBool()) CRASH_UNLESS(false);
-    }
     ScoreController_HandleNoteWasMissed(self, note);
+    if(getConfig().config["Active"].GetBool()) {
+        if(getConfig().config["MissCrash"].GetBool()) Crash();
+    }
+}
+
+MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasCut, void, ScoreController* self, NoteController* note, NoteCutInfo* info) {
+    ScoreController_HandleNoteWasCut(self, note, info);
+    if(getConfig().config["Active"].GetBool()) {
+        if(info->get_allIsOK() && getConfig().config["CrashOnGoodCut"].GetBool()) Crash();
+    }
 }
 
 MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
@@ -70,7 +77,7 @@ MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAnd
     if(getConfig().config["Active"].GetBool()) {
 
         float percentage = self->get_relativeScore();
-        getLogger().info("current Score percentage: " + std::to_string(percentage));
+        //getLogger().info("current Score percentage: " + std::to_string(percentage));
         if(getConfig().config["PercentageActive"].GetBool()) {
             if(percentage < getConfig().config["Percentage"].GetFloat()) Crash();
         }
@@ -82,6 +89,9 @@ MAKE_HOOK_OFFSETLESS(StandardLevelScenesTransitionSetupDataSO_Init, void, Standa
     if(getConfig().config["Active"].GetBool()) {
         if(getConfig().config["CrashOnPlay"].GetBool()) {
             Crash();
+        }
+        if(getConfig().config["CrashOnNoFailOn"].GetBool()) {
+            if(gameplayModifiers->noFailOn0Energy) Crash();
         }
     }
 }
@@ -116,6 +126,11 @@ MAKE_HOOK_OFFSETLESS(PauseController_HandlePauseMenuManagerDidFinishResumeAnimat
             Crash();
         }
     }
+}
+
+MAKE_HOOK_OFFSETLESS(SceneManager_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene previousActiveScene, UnityEngine::SceneManagement::Scene nextActiveScene) {
+    SceneManager_ActiveSceneChanged(previousActiveScene, nextActiveScene);
+    if(getConfig().config["Active"].GetBool() && getConfig().config["CrashOnOver5PerBattery"].GetBool() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getConfig().config["BatteryThreshold"].GetFloat()) Crash();
 }
     
 
@@ -159,6 +174,22 @@ void createDefaultConfig()  {
         getConfig().config.AddMember("OnCrashAction", rapidjson::Value().SetInt(0), allocator);
     }
 
+    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnNoFailOn"))) {
+        getConfig().config.AddMember("CrashOnNoFailOn", rapidjson::Value().SetBool(true), allocator);
+    }
+
+    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnGoodCut"))) {
+        getConfig().config.AddMember("CrashOnGoodCut", rapidjson::Value().SetBool(true), allocator);
+    }
+
+    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnOver5PerBattery"))) {
+        getConfig().config.AddMember("CrashOnOver5PerBattery", rapidjson::Value().SetBool(false), allocator);
+    }
+
+    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("BatteryThreshold"))) {
+        getConfig().config.AddMember("BatteryThreshold", rapidjson::Value().SetFloat(0.05f), allocator);
+    }
+
     if(getConfig().config.HasMember("Active")) {return;}
 
     // Add all the default options
@@ -180,6 +211,12 @@ void createDefaultConfig()  {
     getConfig().config.AddMember("CrashOnUnpause", rapidjson::Value().SetBool(true), allocator);
     getConfig().config.AddMember("CrashCounter", rapidjson::Value().SetInt(0), allocator);
     getConfig().config.AddMember("OnCrashAction", rapidjson::Value().SetInt(0), allocator);
+
+    getConfig().config.AddMember("CrashOnNoFailOn", rapidjson::Value().SetBool(true), allocator);
+    getConfig().config.AddMember("CrashOnOver5PerBattery", rapidjson::Value().SetBool(false), allocator);
+    getConfig().config.AddMember("CrashOnGoodCut", rapidjson::Value().SetBool(true), allocator);
+    getConfig().config.AddMember("BatteryThreshold", rapidjson::Value().SetFloat(0.05f), allocator);
+    
 
     getConfig().Write(); // Write the config back to disk
 }
@@ -206,8 +243,10 @@ extern "C" void load() {
     // Install our hooks
     INSTALL_HOOK_OFFSETLESS(logger, PlayerTransforms_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(logger, ScoreController_HandleNoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "HandleNoteWasMissed", 1));
+    INSTALL_HOOK_OFFSETLESS(logger, ScoreController_HandleNoteWasCut, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "HandleNoteWasCut", 2));
     INSTALL_HOOK_OFFSETLESS(logger, RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, il2cpp_utils::FindMethodUnsafe("", "RelativeScoreAndImmediateRankCounter", "UpdateRelativeScoreAndImmediateRank", 4));
     INSTALL_HOOK_OFFSETLESS(logger, StandardLevelScenesTransitionSetupDataSO_Init, il2cpp_utils::FindMethodUnsafe("", "StandardLevelScenesTransitionSetupDataSO", "Init", 9));
+    INSTALL_HOOK_OFFSETLESS(logger, SceneManager_ActiveSceneChanged, il2cpp_utils::FindMethodUnsafe("UnityEngine.SceneManagement", "SceneManager", "Internal_ActiveSceneChanged", 2));
     //INSTALL_HOOK_OFFSETLESS(logger, PauseController_HandleMenuButtonTriggered, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandleMenuButtonTriggered", 0));
     //INSTALL_HOOK_OFFSETLESS(logger, PauseController_HandlePauseMenuManagerDidFinishResumeAnimation, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandlePauseMenuManagerDidFinishResumeAnimation", 0));
     getLogger().info("Installed all hooks!");
