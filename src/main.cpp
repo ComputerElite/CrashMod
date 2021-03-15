@@ -1,4 +1,6 @@
 #include "main.hpp"
+#include "extern/config-utils/shared/config-utils.hpp"
+#include "ModConfig.hpp"
 #include "GlobalNamespace/ScoreController.hpp"
 #include "GlobalNamespace/RelativeScoreAndImmediateRankCounter.hpp"
 #include "GlobalNamespace/StandardLevelScenesTransitionSetupDataSO.hpp"
@@ -31,11 +33,7 @@ using namespace UnityEngine;
 using namespace QuestUI;
 
 static ModInfo modInfo;
-Configuration& getConfig() {
-    static Configuration config(modInfo);
-    config.Load();
-    return config;
-}
+DEFINE_CONFIG(ModConfig);
 
 Logger& getLogger() {
     static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
@@ -43,14 +41,13 @@ Logger& getLogger() {
 }
 
 void Crash() {
-    getConfig().config["CrashCounter"].SetInt(getConfig().config["CrashCounter"].GetInt() + 1);
-    getLogger().info("Crash number " + std::to_string(getConfig().config["CrashCounter"].GetInt()) + " by Crash mod");
-    getConfig().Write();
-    if(getConfig().config["OnCrashAction"].GetInt() == 0) {
+    getModConfig().CrashCounter.SetValue(getModConfig().CrashCounter.GetValue() + 1);
+    getLogger().info("Crash number " + std::to_string(getModConfig().CrashCounter.GetValue()) + " by Crash mod");
+    if(getModConfig().OnCrashAction.GetValue() == 0) {
         CRASH_UNLESS(false);
-    } else if (getConfig().config["OnCrashAction"].GetInt() == 1){
+    } else if (getModConfig().OnCrashAction.GetValue() == 1){
         Application::Quit();
-    } else if (getConfig().config["OnCrashAction"].GetInt() == 2){
+    } else if (getModConfig().OnCrashAction.GetValue() == 2){
         while (true)
         {
             malloc(1024);
@@ -60,37 +57,37 @@ void Crash() {
 
 MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasMissed, void, ScoreController* self, NoteController* note) {
     ScoreController_HandleNoteWasMissed(self, note);
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["MissCrash"].GetBool()) Crash();
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().MissCrash.GetValue()) Crash();
     }
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreController_HandleNoteWasCut, void, ScoreController* self, NoteController* note, NoteCutInfo* info) {
     ScoreController_HandleNoteWasCut(self, note, info);
-    if(getConfig().config["Active"].GetBool()) {
-        if(info->get_allIsOK() && getConfig().config["CrashOnGoodCut"].GetBool()) Crash();
+    if(getModConfig().Active.GetValue()) {
+        if(info->get_allIsOK() && getModConfig().CrashOnGoodCut.GetValue()) Crash();
     }
 }
 
 MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
     RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank(self, score, modifiedscore, maxscore, maxmodfifiedscore);
-    if(getConfig().config["Active"].GetBool()) {
+    if(getModConfig().Active.GetValue()) {
 
         float percentage = self->get_relativeScore();
         //getLogger().info("current Score percentage: " + std::to_string(percentage));
-        if(getConfig().config["PercentageActive"].GetBool()) {
-            if(percentage < getConfig().config["Percentage"].GetFloat()) Crash();
+        if(getModConfig().PercentageActive.GetValue()) {
+            if(percentage < getModConfig().Percentage.GetValue() * 100) Crash();
         }
     }
 }
 
 MAKE_HOOK_OFFSETLESS(StandardLevelScenesTransitionSetupDataSO_Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, IDifficultyBeatmap* dbm, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
     StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["CrashOnPlay"].GetBool()) {
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().CrashOnPlay.GetValue()) {
             Crash();
         }
-        if(getConfig().config["CrashOnNoFailOn"].GetBool()) {
+        if(getModConfig().CrashOnNoFailOn.GetValue()) {
             if(gameplayModifiers->noFailOn0Energy) Crash();
         }
     }
@@ -98,8 +95,8 @@ MAKE_HOOK_OFFSETLESS(StandardLevelScenesTransitionSetupDataSO_Init, void, Standa
 
 MAKE_HOOK_OFFSETLESS(PlayerTransforms_Update, void, PlayerTransforms* self) {
     PlayerTransforms_Update(self);
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["CrashOnTurn"].GetBool()) {
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().CrashOnTurn.GetValue()) {
             getLogger().info("Current y turn: " + std::to_string(self->headWorldRot.get_eulerAngles().y));
             if(self->headWorldRot.get_eulerAngles().y > 165 && self->headWorldRot.get_eulerAngles().y < 195) {
                 Crash();
@@ -111,8 +108,8 @@ MAKE_HOOK_OFFSETLESS(PlayerTransforms_Update, void, PlayerTransforms* self) {
 
 MAKE_HOOK_OFFSETLESS(PauseController_HandleMenuButtonTriggered, void, PauseController* self) {
     PauseController_HandleMenuButtonTriggered(self);
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["CrashOnPause"].GetBool()) {
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().CrashOnPause.GetValue()) {
             Crash();
         }
     }
@@ -121,8 +118,8 @@ MAKE_HOOK_OFFSETLESS(PauseController_HandleMenuButtonTriggered, void, PauseContr
 
 MAKE_HOOK_OFFSETLESS(PauseController_HandlePauseMenuManagerDidFinishResumeAnimation, void, PauseController* self) {
     PauseController_HandlePauseMenuManagerDidFinishResumeAnimation(self);
-    if(getConfig().config["Active"].GetBool()) {
-        if(getConfig().config["CrashOnUnpause"].GetBool()) {
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().CrashOnUnpause.GetValue()) {
             Crash();
         }
     }
@@ -130,95 +127,7 @@ MAKE_HOOK_OFFSETLESS(PauseController_HandlePauseMenuManagerDidFinishResumeAnimat
 
 MAKE_HOOK_OFFSETLESS(SceneManager_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene previousActiveScene, UnityEngine::SceneManagement::Scene nextActiveScene) {
     SceneManager_ActiveSceneChanged(previousActiveScene, nextActiveScene);
-    if(getConfig().config["Active"].GetBool() && getConfig().config["CrashOnOver5PerBattery"].GetBool() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getConfig().config["BatteryThreshold"].GetFloat()) Crash();
-}
-    
-
-void createDefaultConfig()  {
-
-    rapidjson::Document::AllocatorType& allocator = getConfig().config.GetAllocator();
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("Percentage"))) {
-        getConfig().config.AddMember("Percentage", rapidjson::Value().SetFloat(0.95), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("PercentageActive"))) {
-        getConfig().config.AddMember("PercentageActive", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("MissCrash"))) {
-        getConfig().config.AddMember("MissCrash", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnPlay"))) {
-        getConfig().config.AddMember("CrashOnPlay", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnTurn"))) {
-        getConfig().config.AddMember("CrashOnTurn", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnPause"))) {
-        getConfig().config.AddMember("CrashOnPause", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnUnpause"))) {
-        getConfig().config.AddMember("CrashOnUnpause", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashCounter"))) {
-        getConfig().config.AddMember("CrashCounter", rapidjson::Value().SetInt(0), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("OnCrashAction"))) {
-        getConfig().config.AddMember("OnCrashAction", rapidjson::Value().SetInt(0), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnNoFailOn"))) {
-        getConfig().config.AddMember("CrashOnNoFailOn", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnGoodCut"))) {
-        getConfig().config.AddMember("CrashOnGoodCut", rapidjson::Value().SetBool(true), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("CrashOnOver5PerBattery"))) {
-        getConfig().config.AddMember("CrashOnOver5PerBattery", rapidjson::Value().SetBool(false), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active") && !(getConfig().config.HasMember("BatteryThreshold"))) {
-        getConfig().config.AddMember("BatteryThreshold", rapidjson::Value().SetFloat(0.05f), allocator);
-    }
-
-    if(getConfig().config.HasMember("Active")) {return;}
-
-    // Add all the default options
-    getConfig().config.RemoveAllMembers(); // Empty the config - it should already be empty but just to be sure
-    getConfig().config.SetObject(); // Set the base of the config to a value that can contain keys
-
-    // Get what is used to allocate memory in the config file
-    // rapidjson::Document::AllocatorType& allocator = getConfig().config.GetAllocator();
-
-    // Add a member to the config, using the allocator
-
-    getConfig().config.AddMember("Active", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("Percentage", rapidjson::Value().SetFloat(0.95), allocator);
-    getConfig().config.AddMember("PercentageActive", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("MissCrash", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashOnPlay", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashOnTurn", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashOnPause", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashOnUnpause", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashCounter", rapidjson::Value().SetInt(0), allocator);
-    getConfig().config.AddMember("OnCrashAction", rapidjson::Value().SetInt(0), allocator);
-
-    getConfig().config.AddMember("CrashOnNoFailOn", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("CrashOnOver5PerBattery", rapidjson::Value().SetBool(false), allocator);
-    getConfig().config.AddMember("CrashOnGoodCut", rapidjson::Value().SetBool(true), allocator);
-    getConfig().config.AddMember("BatteryThreshold", rapidjson::Value().SetFloat(0.05f), allocator);
-    
-
-    getConfig().Write(); // Write the config back to disk
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() * 100) Crash();
 }
 
 extern "C" void setup(ModInfo& info) {
@@ -226,15 +135,15 @@ extern "C" void setup(ModInfo& info) {
     info.version = VERSION;
     modInfo = info;
 	
-    getConfig().Load(); // Load the config file
-    createDefaultConfig();
     getLogger().info("Completed setup!");
 }
 
 extern "C" void load() {
     getLogger().info("Installing hooks...");
     il2cpp_functions::Init();
+    
     QuestUI::Init();
+    getModConfig().Init(modInfo);
 
     LoggerContextObject logger = getLogger().WithContext("load");
     custom_types::Register::RegisterType<CrashMod::CrashModViewController>();
