@@ -77,7 +77,7 @@ MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAnd
         float percentage = self->get_relativeScore();
         //getLogger().info("current Score percentage: " + std::to_string(percentage));
         if(getModConfig().PercentageActive.GetValue()) {
-            if(percentage < getModConfig().Percentage.GetValue() * 100) Crash();
+            if(percentage < getModConfig().Percentage.GetValue() / 100) Crash();
         }
     }
 }
@@ -128,7 +128,7 @@ MAKE_HOOK_OFFSETLESS(PauseController_HandlePauseMenuManagerDidFinishResumeAnimat
 
 MAKE_HOOK_OFFSETLESS(SceneManager_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene previousActiveScene, UnityEngine::SceneManagement::Scene nextActiveScene) {
     SceneManager_ActiveSceneChanged(previousActiveScene, nextActiveScene);
-    if(getModConfig().Active.GetValue() && getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() * 100) Crash();
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
 }
 
 extern "C" void setup(ModInfo& info) {
