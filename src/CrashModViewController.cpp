@@ -43,7 +43,7 @@ void CrashModViewController::DidActivate(bool firstActivation, bool addedToHiera
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().PercentageActive)->get_gameObject(), "Enabled the Crash for percentage");
 
         // Percentage;
-        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementFloat(container->get_transform(), getModConfig().Percentage, 0, 1.0f, 0.0f, 100.0f)->get_gameObject(), "Under this percentage your game will crash.");
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementFloat(container->get_transform(), getModConfig().Percentage, 0, 1.0f, 0.0f, 100.0f)->get_gameObject(), "Under this percentage (score) your game will crash.");
 
         // MissCrash
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().MissCrash)->get_gameObject(), "Crashes the game on a miss");
