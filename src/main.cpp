@@ -146,9 +146,9 @@ extern "C" void load() {
     QuestUI::Init();
 
     LoggerContextObject logger = getLogger().WithContext("load");
-    custom_types::Register::RegisterType<CrashMod::CrashModViewController>();
+    //custom_types::Register::RegisterType<CrashMod::CrashModViewController>();
     // Register our mod settings menu
-    QuestUI::Register::RegisterModSettingsViewController<CrashMod::CrashModViewController*>(modInfo);
+    QuestUI::Register::RegisterModSettingsViewController(modInfo, DidActivate);
     // Install our hooks
     INSTALL_HOOK_OFFSETLESS(logger, PlayerTransforms_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(logger, ScoreController_HandleNoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "HandleNoteWasMissed", 1));

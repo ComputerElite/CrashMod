@@ -26,15 +26,15 @@ using namespace UnityEngine;
 using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
 using namespace HMUI;
-using namespace CrashMod;
+//using namespace CrashMod;
 
-DEFINE_CLASS(CrashModViewController);
+//DEFINE_CLASS(CrashModViewController);
 
 
-void CrashModViewController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling){
+void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling){
     if(firstActivation) {
-        get_gameObject()->AddComponent<Touchable*>();
-        GameObject* container = BeatSaberUI::CreateScrollableSettingsContainer(get_transform());
+        self->get_gameObject()->AddComponent<Touchable*>();
+        GameObject* container = BeatSaberUI::CreateScrollableSettingsContainer(self->get_transform());
 
         // Active
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().Active)->get_gameObject(), "Why would you want to disable it at all?");
@@ -86,7 +86,7 @@ void CrashModViewController::DidActivate(bool firstActivation, bool addedToHiera
 
         // Crash Now
         BeatSaberUI::CreateUIButton(container->get_transform(), "Crash now", 
-            [this]() {
+            []() {
                 getModConfig().CrashCounter.SetValue(getModConfig().CrashCounter.GetValue() + 1);
                 CRASH_UNLESS(false);
             });
