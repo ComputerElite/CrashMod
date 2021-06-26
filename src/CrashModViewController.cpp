@@ -60,6 +60,11 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
         // CrashOnNoFailOn
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnNoFailOn)->get_gameObject(), "No fail is a great feature (especially for torture). So why don't just let you not do it at all?");
 
+        // CrashOnNotFullCombo
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnNotFullCombo)->get_gameObject(), "Do a full combo or crash");
+
+        // CrashOnNewHighscore
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnNewHighscore)->get_gameObject(), "Why would you want new high scores??? Don't get better");
 
         // BatteryThreshold
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementFloat(container->get_transform(), getModConfig().BatteryThreshold, 0, 1.0f, 0.0f, 100.0f)->get_gameObject(), "Over this percentage your game will crash.");
