@@ -11,6 +11,8 @@ DECLARE_CONFIG(ModConfig,
     CONFIG_VALUE(CrashOnTurn, bool, "Crash on Turn", true);
     CONFIG_VALUE(CrashOnPause, bool, "CrashOnPause", true);
     CONFIG_VALUE(CrashOnUnpause, bool, "CrashOnUnpause", true);
+    CONFIG_VALUE(CrashOnNotFullCombo, bool, "Crash on not Full Combo", true);
+    CONFIG_VALUE(CrashOnNewHighscore, bool, "Crash on new highscore", true);
     CONFIG_VALUE(CrashCounter, int, "CrashCounter", 0);
     CONFIG_VALUE(OnCrashAction, int, "OnCrashAction", 0);
     CONFIG_VALUE(CrashOnNoFailOn, bool, "Crash if you start a level with no fail", true);
@@ -27,6 +29,8 @@ DECLARE_CONFIG(ModConfig,
         CONFIG_INIT_VALUE(CrashOnTurn);
         CONFIG_INIT_VALUE(CrashOnPause);
         CONFIG_INIT_VALUE(CrashOnUnpause);
+        CONFIG_INIT_VALUE(CrashOnNotFullCombo);
+        CONFIG_INIT_VALUE(CrashOnNewHighscore);
         CONFIG_INIT_VALUE(CrashCounter);
         CONFIG_INIT_VALUE(OnCrashAction);
         CONFIG_INIT_VALUE(CrashOnNoFailOn);
