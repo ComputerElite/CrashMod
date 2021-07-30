@@ -62,9 +62,9 @@ MAKE_HOOK_MATCH(ScoreController_HandleNoteWasMissed, &ScoreController::HandleNot
     if(getModConfig().Active.GetValue() && getModConfig().MissCrash.GetValue()) Crash();
 }
 
-MAKE_HOOK_MATCH(ScoreController_HandleNoteWasCut, &ScoreController::HandleNoteWasCut, void, ScoreController* self, NoteController* note, NoteCutInfo& info) {
+MAKE_HOOK_MATCH(ScoreController_HandleNoteWasCut, &ScoreController::HandleNoteWasCut, void, ScoreController* self, NoteController* note, ByRef<GlobalNamespace::NoteCutInfo> info) {
     ScoreController_HandleNoteWasCut(self, note, info);
-    if(getModConfig().Active.GetValue() && info.get_allIsOK() && getModConfig().CrashOnGoodCut.GetValue()) Crash();
+    if(getModConfig().Active.GetValue() && info.heldRef.get_allIsOK() && getModConfig().CrashOnGoodCut.GetValue()) Crash();
 }
 
 MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
