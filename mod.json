@@ -9,6 +9,9 @@
   "modFiles": [
     "libCrashMod.so"
   ],
+  "libraryFiles": [
+    "libbeatsaber-hook_2_2_4.so"
+  ],
   "dependencies": [],
   "fileCopies": []
 }
