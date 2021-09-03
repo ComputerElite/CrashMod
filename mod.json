@@ -2,15 +2,15 @@
   "_QPVersion": "0.1.1",
   "id": "CrashMod",
   "name": "CrashMod",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "ComputerElite",
   "packageId": "com.beatgames.beatsaber",
-  "packageVersion": "1.16.4",
+  "packageVersion": "1.17.0",
   "modFiles": [
     "libCrashMod.so"
   ],
   "libraryFiles": [
-    "libbeatsaber-hook_2_2_5.so"
+    "libbeatsaber-hook_2_3_0.so"
   ],
   "dependencies": [],
   "fileCopies": []
