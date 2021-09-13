@@ -72,6 +72,9 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
         // CrashOnOver5PerBattery
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnOver5PerBattery)->get_gameObject(), "You'll have to play Beat Saber while your Quest dies");
 
+        // CrashOnFirstBlockMiss
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnFirstBlockMiss)->get_gameObject(), "Ported from anxiety by Phaze. Does what it says.");
+
         // CrashOnPause
         /*
         auto CrashOnPauseChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(

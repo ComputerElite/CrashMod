@@ -57,14 +57,18 @@ void Crash() {
     else if (getModConfig().OnCrashAction.GetValue() == 2) while (true) malloc(1024);
 }
 
+bool firstNote = true;
+
 MAKE_HOOK_MATCH(ScoreController_HandleNoteWasMissed, &ScoreController::HandleNoteWasMissed, void, ScoreController* self, NoteController* note) {
     ScoreController_HandleNoteWasMissed(self, note);
-    if(getModConfig().Active.GetValue() && getModConfig().MissCrash.GetValue()) Crash();
+    if(getModConfig().Active.GetValue() && (getModConfig().MissCrash.GetValue() || getModConfig().CrashOnFirstBlockMiss.GetValue() && firstNote)) Crash();
+    firstNote = false;
 }
 
 MAKE_HOOK_MATCH(ScoreController_HandleNoteWasCut, &ScoreController::HandleNoteWasCut, void, ScoreController* self, NoteController* note, ByRef<GlobalNamespace::NoteCutInfo> info) {
     ScoreController_HandleNoteWasCut(self, note, info);
-    if(getModConfig().Active.GetValue() && info.heldRef.get_allIsOK() && getModConfig().CrashOnGoodCut.GetValue()) Crash();
+    if(getModConfig().Active.GetValue() && (info.heldRef.get_allIsOK() && getModConfig().CrashOnGoodCut.GetValue() || firstNote && !info.heldRef.get_allIsOK() && getModConfig().CrashOnFirstBlockMiss.GetValue())) Crash();
+    firstNote = false;
 }
 
 MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
@@ -76,6 +80,7 @@ MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelSce
     StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
     if(getModConfig().Active.GetValue()) {
         if(getModConfig().CrashOnPlay.GetValue() || getModConfig().CrashOnNoFailOn.GetValue() && gameplayModifiers->noFailOn0Energy) Crash();
+        firstNote = true;
     }
 }
 
@@ -122,6 +127,7 @@ extern "C" void load() {
     //custom_types::Register::RegisterType<CrashMod::CrashModViewController>();
     // Register our mod settings menu
     QuestUI::Register::RegisterModSettingsViewController(modInfo, DidActivate);
+    QuestUI::Register::RegisterMainMenuModSettingsViewController(modInfo, DidActivate);
     // Install our hooks
     INSTALL_HOOK(logger, PlayerTransforms_Update);
     INSTALL_HOOK(logger, ScoreController_HandleNoteWasMissed);

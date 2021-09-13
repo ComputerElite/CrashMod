@@ -19,6 +19,7 @@ DECLARE_CONFIG(ModConfig,
     CONFIG_VALUE(CrashOnOver5PerBattery, bool, "Crash if your Quest has more battery than above", false);
     CONFIG_VALUE(CrashOnGoodCut, bool, "Crash on good cut", true);
     CONFIG_VALUE(BatteryThreshold, float, "Battery threshold", 5.0f);
+    CONFIG_VALUE(CrashOnFirstBlockMiss, bool, "Crash on miss of first block", true);
 
     CONFIG_INIT_FUNCTION(
         CONFIG_INIT_VALUE(Active);
@@ -37,5 +38,6 @@ DECLARE_CONFIG(ModConfig,
         CONFIG_INIT_VALUE(CrashOnOver5PerBattery);
         CONFIG_INIT_VALUE(CrashOnGoodCut);
         CONFIG_INIT_VALUE(BatteryThreshold);
+        CONFIG_INIT_VALUE(CrashOnFirstBlockMiss);
     )
 )
