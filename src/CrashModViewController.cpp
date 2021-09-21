@@ -1,6 +1,5 @@
 #include "CrashModViewController.hpp"
 #include "ModConfig.hpp"
-#include "extern/config-utils/shared/config-utils.hpp"
 
 #include "UnityEngine/RectOffset.hpp"
 #include "UnityEngine/RectTransform.hpp"
@@ -74,6 +73,21 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
 
         // CrashOnFirstBlockMiss
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnFirstBlockMiss)->get_gameObject(), "Ported from anxiety by Phaze. Does what it says.");
+
+        // CrashOnHighBPM
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnHighBPM)->get_gameObject(), "Crash your game if you want to play a map above the bpm below");
+
+        // BatteryThreshold
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementFloat(container->get_transform(), getModConfig().HighBPMValue, 0, 5.0f, 0.0f, 1000.0f)->get_gameObject(), "Sets Value for above");
+
+        // CrashOnLowBPM
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnLowBPM)->get_gameObject(), "Crash your game if you want to play a map below the bpm below");
+
+        //LowBPMValue
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementFloat(container->get_transform(), getModConfig().LowBPMValue, 0, 5.0f, 0.0f, 1000.0f)->get_gameObject(), "Sets Value for above");
+
+        // CrashOn115
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOn115)->get_gameObject(), "Crash your game if you score a 115");
 
         // CrashOnPause
         /*

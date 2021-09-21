@@ -20,6 +20,11 @@ DECLARE_CONFIG(ModConfig,
     CONFIG_VALUE(CrashOnGoodCut, bool, "Crash on good cut", true);
     CONFIG_VALUE(BatteryThreshold, float, "Battery threshold", 5.0f);
     CONFIG_VALUE(CrashOnFirstBlockMiss, bool, "Crash on miss of first block", true);
+    CONFIG_VALUE(CrashOnLowBPM, bool, "Crash on high BPM maps", true);
+    CONFIG_VALUE(CrashOnHighBPM, bool, "Crash on low BPM maps", true);
+    CONFIG_VALUE(LowBPMValue, float, "Min BPM", 100.0f);
+    CONFIG_VALUE(HighBPMValue, float, "Max BPM", 200.0f);
+    CONFIG_VALUE(CrashOn115, bool, "Crash on 115", true);
 
     CONFIG_INIT_FUNCTION(
         CONFIG_INIT_VALUE(Active);
@@ -39,5 +44,10 @@ DECLARE_CONFIG(ModConfig,
         CONFIG_INIT_VALUE(CrashOnGoodCut);
         CONFIG_INIT_VALUE(BatteryThreshold);
         CONFIG_INIT_VALUE(CrashOnFirstBlockMiss);
+        CONFIG_INIT_VALUE(CrashOnLowBPM);
+        CONFIG_INIT_VALUE(CrashOnHighBPM);
+        CONFIG_INIT_VALUE(LowBPMValue);
+        CONFIG_INIT_VALUE(HighBPMValue);
+        CONFIG_INIT_VALUE(CrashOn115);
     )
-)
+);
