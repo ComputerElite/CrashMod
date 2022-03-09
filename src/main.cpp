@@ -1,5 +1,5 @@
 #include "main.hpp"
-#include "extern/config-utils/shared/config-utils.hpp"
+#include "extern/includes/config-utils/shared/config-utils.hpp"
 #include "ModConfig.hpp"
 #include "GlobalNamespace/ScoreController.hpp"
 #include "GlobalNamespace/RelativeScoreAndImmediateRankCounter.hpp"
@@ -24,6 +24,8 @@
 #include "GlobalNamespace/ScoreFormatter.hpp"
 #include "GlobalNamespace/FlyingScoreEffect.hpp"
 #include "GlobalNamespace/BeatmapObjectExecutionRatingsRecorder.hpp"
+#include "GlobalNamespace/BombNoteController.hpp"
+#include "GlobalNamespace/Saber.hpp"
 
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
@@ -79,6 +81,11 @@ MAKE_HOOK_MATCH(ScoreController_HandleNoteWasCut, &ScoreController::HandleNoteWa
     firstNote = false;
 }
 
+MAKE_HOOK_MATCH(BombNoteController_HandleWasCutBySaber, &BombNoteController::HandleWasCutBySaber, void, BombNoteController* self, Saber* saber, Vector3 cutPoint, Quaternion orientation, Vector3 cutDirVec) {
+    BombNoteController_HandleWasCutBySaber(self, saber, cutPoint, orientation, cutDirVec);
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnBomb.GetValue()) Crash();
+}
+
 std::map<GlobalNamespace::ISaberSwingRatingCounter*, swingRatingCounter_context> swingRatingMap;
 
 void JudgeNoContext(FlyingScoreEffect* self, NoteCutInfo& noteCutInfo) {
@@ -90,7 +97,7 @@ void JudgeNoContext(FlyingScoreEffect* self, NoteCutInfo& noteCutInfo) {
 }
 
 void Judge(ISaberSwingRatingCounter* counter) {
-
+    if(!getModConfig().Active.GetValue()) return;
     auto itr = swingRatingMap.find(counter);
     if(itr == swingRatingMap.end()) {
         getLogger().info("counter was not found in swingRatingMap!");
@@ -104,7 +111,7 @@ void Judge(ISaberSwingRatingCounter* counter) {
 
     ScoreModel::RawScoreWithoutMultiplier(context.noteCutInfo.swingRatingCounter, context.noteCutInfo.cutDistanceToCenter, byref(before), byref(after), byref(accuracy));
     int total = before + after + accuracy;
-    if(total == 115) Crash();
+    if(getModConfig().CrashOn115.GetValue() && total == 115) Crash();
     if(context.flyingScoreEffect) {
         swingRatingMap.erase(itr);
     }
@@ -131,10 +138,10 @@ MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmed
     if(getModConfig().Active.GetValue() && getModConfig().PercentageActive.GetValue() && self->get_relativeScore() < getModConfig().Percentage.GetValue() / 100) Crash();
 }
 
-MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
-    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
+MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused) {
+    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, startPaused);
     if(getModConfig().Active.GetValue()) {
-        if(getModConfig().CrashOnPlay.GetValue() || getModConfig().CrashOnNoFailOn.GetValue() && gameplayModifiers->noFailOn0Energy) Crash();
+        if(getModConfig().CrashOnPlay.GetValue() || getModConfig().CrashOnNoFailOn.GetValue() && gameplayModifiers->get_noFailOn0Energy()) Crash();
         if(getModConfig().CrashOnHighBPM.GetValue() && bpm > getModConfig().HighBPMValue.GetValue() || getModConfig().CrashOnLowBPM.GetValue() && bpm < getModConfig().LowBPMValue.GetValue()) Crash();
         firstNote = true;
     }
@@ -142,7 +149,7 @@ MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelSce
 
 MAKE_HOOK_MATCH(PlayerTransforms_Update, &PlayerTransforms::Update, void, PlayerTransforms* self) {
     PlayerTransforms_Update(self);
-    if(getModConfig().Active.GetValue() && getModConfig().CrashOnTurn.GetValue() && self->headWorldRot.get_eulerAngles().y > 165 && self->headWorldRot.get_eulerAngles().y < 195) Crash();
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnTurn.GetValue() && self->get_headWorldRot().get_eulerAngles().y > 165 && self->get_headWorldRot().get_eulerAngles().y < 195) Crash();
 }
 
 MAKE_HOOK_MATCH(PauseController_HandleMenuButtonTriggered, &PauseController::HandleMenuButtonTriggered, void, PauseController* self) {
@@ -157,12 +164,15 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidFinishResumeAnimation, 
 
 MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::SceneManager::Internal_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene previousActiveScene, UnityEngine::SceneManagement::Scene nextActiveScene) {
     SceneManager_ActiveSceneChanged(previousActiveScene, nextActiveScene);
-    if(getModConfig().Active.GetValue() && getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
+    if(getModConfig().Active.GetValue()) {
+        if(getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
+        if(getModConfig().CrashOnNE.GetValue() && Modloader::getMods().find("noodleextensions") == Modloader::getMods().end()) Crash();
+    }
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IDifficultyBeatmap* beatmap, bool practice, bool newHighScore) {
     ResultsViewController_Init(self, result, beatmap, practice, newHighScore);
-    if(getModConfig().Active.GetValue() && ((getModConfig().CrashOnNotFullCombo.GetValue() && !result->fullCombo) || (getModConfig().CrashOnNewHighscore.GetValue() && self->newHighScore))) Crash();
+    if(getModConfig().Active.GetValue() && ((getModConfig().CrashOnNotFullCombo.GetValue() && !result->dyn_fullCombo()) || (getModConfig().CrashOnNewHighscore.GetValue() && self->dyn__newHighScore()))) Crash();
 }
 
 MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView::RefreshContent, void, StandardLevelDetailView* self) {
@@ -202,6 +212,7 @@ extern "C" void load() {
     INSTALL_HOOK(logger, ResultsViewController_Init);
     INSTALL_HOOK(logger, InitFlyingScoreEffect);
     INSTALL_HOOK(logger, HandleSwingFinish);
+    INSTALL_HOOK(logger, BombNoteController_HandleWasCutBySaber)
     //INSTALL_HOOK_OFFSETLESS(logger, PauseController_HandleMenuButtonTriggered, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandleMenuButtonTriggered", 0));
     //INSTALL_HOOK_OFFSETLESS(logger, PauseController_HandlePauseMenuManagerDidFinishResumeAnimation, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandlePauseMenuManagerDidFinishResumeAnimation", 0));
     getLogger().info("Installed all hooks!");

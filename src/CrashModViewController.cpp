@@ -50,6 +50,9 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
         // CrashOnGoodCut
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnGoodCut)->get_gameObject(), "Well it crashes the game if you do a good cut");
 
+        // CrashOnBomb
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnBomb)->get_gameObject(), "Bomb boom boom bo-");
+
         // CrashOnPlay
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnPlay)->get_gameObject(), "Crashes the game when you start a level");
 
@@ -88,6 +91,9 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
 
         // CrashOn115
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOn115)->get_gameObject(), "Crash your game if you score a 115");
+
+        // CrashOnNE
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnNE)->get_gameObject(), "Crash if you got Noodle Extensions installed");
 
         // CrashOnPause
         /*
