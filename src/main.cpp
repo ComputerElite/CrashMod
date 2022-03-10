@@ -1,6 +1,9 @@
 #include "main.hpp"
 #include "extern/includes/config-utils/shared/config-utils.hpp"
 #include "ModConfig.hpp"
+#include "GlobalNamespace/IReadonlyBeatmapData.hpp"
+#include "GlobalNamespace/CutScoreBuffer.hpp"
+#include "GlobalNamespace/ScoreModel_NoteScoreDefinition.hpp"
 #include "GlobalNamespace/ScoreController.hpp"
 #include "GlobalNamespace/RelativeScoreAndImmediateRankCounter.hpp"
 #include "GlobalNamespace/StandardLevelScenesTransitionSetupDataSO.hpp"
@@ -26,6 +29,7 @@
 #include "GlobalNamespace/BeatmapObjectExecutionRatingsRecorder.hpp"
 #include "GlobalNamespace/BombNoteController.hpp"
 #include "GlobalNamespace/Saber.hpp"
+#include "GlobalNamespace/IReadonlyCutScoreBuffer.hpp"
 
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
@@ -86,51 +90,13 @@ MAKE_HOOK_MATCH(BombNoteController_HandleWasCutBySaber, &BombNoteController::Han
     if(getModConfig().Active.GetValue() && getModConfig().CrashOnBomb.GetValue()) Crash();
 }
 
-std::map<GlobalNamespace::ISaberSwingRatingCounter*, swingRatingCounter_context> swingRatingMap;
-
-void JudgeNoContext(FlyingScoreEffect* self, NoteCutInfo& noteCutInfo) {
-    int before;
-    int after;
-    int accuracy;
-    ScoreModel::RawScoreWithoutMultiplier(noteCutInfo.swingRatingCounter, noteCutInfo.cutDistanceToCenter, byref(before), byref(after), byref(accuracy));
-    int total = before + after + accuracy;
-}
-
-void Judge(ISaberSwingRatingCounter* counter) {
-    if(!getModConfig().Active.GetValue()) return;
-    auto itr = swingRatingMap.find(counter);
-    if(itr == swingRatingMap.end()) {
-        getLogger().info("counter was not found in swingRatingMap!");
-        return;
-    }
-    auto context = itr->second;
-
-    int before;
-    int after;
-    int accuracy;
-
-    ScoreModel::RawScoreWithoutMultiplier(context.noteCutInfo.swingRatingCounter, context.noteCutInfo.cutDistanceToCenter, byref(before), byref(after), byref(accuracy));
-    int total = before + after + accuracy;
-    if(getModConfig().CrashOn115.GetValue() && total == 115) Crash();
-    if(context.flyingScoreEffect) {
-        swingRatingMap.erase(itr);
-    }
-}
-
-MAKE_HOOK_MATCH(InitFlyingScoreEffect, &FlyingScoreEffect::InitAndPresent, void, FlyingScoreEffect* self, ByRef<NoteCutInfo> noteCutInfo, int multiplier, float duration, Vector3 targetPos, Quaternion rotation, Color color) {
-
-    InitFlyingScoreEffect(self, noteCutInfo, multiplier, duration, targetPos, rotation, color);
-
-    auto counter = noteCutInfo.heldRef.swingRatingCounter;
-
-    GlobalNamespace::NoteCutInfo info = noteCutInfo.heldRef;
-
-    swingRatingMap.insert(std::make_pair(counter, swingRatingCounter_context{info, self}));
-}
-
-MAKE_HOOK_MATCH(HandleSwingFinish, &GlobalNamespace::BeatmapObjectExecutionRatingsRecorder_CutScoreHandler::HandleSaberSwingRatingCounterDidFinish, void, GlobalNamespace::BeatmapObjectExecutionRatingsRecorder_CutScoreHandler* self, ISaberSwingRatingCounter* counter) {
+MAKE_HOOK_MATCH(HandleSwingFinish, &GlobalNamespace::CutScoreBuffer::HandleSaberSwingRatingCounterDidFinish, void, GlobalNamespace::CutScoreBuffer* self, ISaberSwingRatingCounter* counter) {
     HandleSwingFinish(self, counter);
-    Judge(counter);
+    if(!getModConfig().Active.GetValue() || !getModConfig().CrashOn115.GetValue()) return;
+    int score = self->dyn__afterCutScore() + self->dyn__beforeCutScore() + self->dyn__centerDistanceCutScore();
+    auto *noteScoreDefinition = self->dyn__noteScoreDefinition();
+    int maxCutScore = noteScoreDefinition->dyn_maxAfterCutScore() + noteScoreDefinition->dyn_maxBeforeCutScore() + noteScoreDefinition->dyn_maxCenterDistanceCutScore();
+    if(score == maxCutScore) Crash();
 }
 
 MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
@@ -138,8 +104,8 @@ MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmed
     if(getModConfig().Active.GetValue() && getModConfig().PercentageActive.GetValue() && self->get_relativeScore() < getModConfig().Percentage.GetValue() / 100) Crash();
 }
 
-MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused) {
-    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, startPaused);
+MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused, bool useTestNoteCutSoundEffects) {
+    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, startPaused, useTestNoteCutSoundEffects);
     if(getModConfig().Active.GetValue()) {
         if(getModConfig().CrashOnPlay.GetValue() || getModConfig().CrashOnNoFailOn.GetValue() && gameplayModifiers->get_noFailOn0Energy()) Crash();
         if(getModConfig().CrashOnHighBPM.GetValue() && bpm > getModConfig().HighBPMValue.GetValue() || getModConfig().CrashOnLowBPM.GetValue() && bpm < getModConfig().LowBPMValue.GetValue()) Crash();
@@ -170,8 +136,8 @@ MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::
     }
 }
 
-MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IDifficultyBeatmap* beatmap, bool practice, bool newHighScore) {
-    ResultsViewController_Init(self, result, beatmap, practice, newHighScore);
+MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IReadonlyBeatmapData* beatmap, IDifficultyBeatmap* bm, bool practice, bool newHighScore) {
+    ResultsViewController_Init(self, result, beatmap, bm, practice, newHighScore);
     if(getModConfig().Active.GetValue() && ((getModConfig().CrashOnNotFullCombo.GetValue() && !result->dyn_fullCombo()) || (getModConfig().CrashOnNewHighscore.GetValue() && self->dyn__newHighScore()))) Crash();
 }
 
@@ -210,7 +176,7 @@ extern "C" void load() {
     INSTALL_HOOK(logger, StandardLevelScenesTransitionSetupDataSO_Init);
     INSTALL_HOOK(logger, SceneManager_ActiveSceneChanged);
     INSTALL_HOOK(logger, ResultsViewController_Init);
-    INSTALL_HOOK(logger, InitFlyingScoreEffect);
+    //INSTALL_HOOK(logger, InitFlyingScoreEffect);
     INSTALL_HOOK(logger, HandleSwingFinish);
     INSTALL_HOOK(logger, BombNoteController_HandleWasCutBySaber)
     //INSTALL_HOOK_OFFSETLESS(logger, PauseController_HandleMenuButtonTriggered, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandleMenuButtonTriggered", 0));
