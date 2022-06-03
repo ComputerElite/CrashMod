@@ -30,6 +30,8 @@
 #include "GlobalNamespace/BombNoteController.hpp"
 #include "GlobalNamespace/Saber.hpp"
 #include "GlobalNamespace/IReadonlyCutScoreBuffer.hpp"
+#include "UnityEngine/AudioConfiguration.hpp"
+#include "UnityEngine/AudioSettings.hpp"
 
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
@@ -134,6 +136,11 @@ MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::
         if(getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
         if(getModConfig().CrashOnNE.GetValue() && Modloader::getMods().find("noodleextensions") == Modloader::getMods().end()) Crash();
     }
+    UnityEngine::AudioConfiguration audioConfig = AudioSettings::GetConfiguration();
+    audioConfig.dspBufferSize = 2048;
+    using ResetMethodDef = function_ptr_t<bool, AudioConfiguration>;
+    static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::Reset"));
+    Reset(audioConfig);
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IReadonlyBeatmapData* beatmap, IDifficultyBeatmap* bm, bool practice, bool newHighScore) {
