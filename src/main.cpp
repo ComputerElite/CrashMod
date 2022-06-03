@@ -131,16 +131,24 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidFinishResumeAnimation, 
 }
 
 MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::SceneManager::Internal_ActiveSceneChanged, void, UnityEngine::SceneManagement::Scene previousActiveScene, UnityEngine::SceneManagement::Scene nextActiveScene) {
+    getLogger().info("CRASHMOD DEBUG 1");
     SceneManager_ActiveSceneChanged(previousActiveScene, nextActiveScene);
+    getLogger().info("CRASHMOD DEBUG 2");
     if(getModConfig().Active.GetValue()) {
         if(getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
         if(getModConfig().CrashOnNE.GetValue() && Modloader::getMods().find("noodleextensions") == Modloader::getMods().end()) Crash();
     }
+    getLogger().info("CRASHMOD DEBUG 3");
     UnityEngine::AudioConfiguration audioConfig = AudioSettings::GetConfiguration();
+    getLogger().info("CRASHMOD DEBUG 4");
     audioConfig.dspBufferSize = 128;
+    getLogger().info("CRASHMOD DEBUG 5");
     using ResetMethodDef = function_ptr_t<bool, AudioConfiguration>;
+    getLogger().info("CRASHMOD DEBUG 6");
     static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::SetConfiguration_Injected"));
+    getLogger().info("CRASHMOD DEBUG 7");
     Reset(audioConfig);
+    getLogger().info("CRASHMOD DEBUG 8");
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IReadonlyBeatmapData* beatmap, IDifficultyBeatmap* bm, bool practice, bool newHighScore) {
