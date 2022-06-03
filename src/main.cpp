@@ -137,9 +137,9 @@ MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::
         if(getModConfig().CrashOnNE.GetValue() && Modloader::getMods().find("noodleextensions") == Modloader::getMods().end()) Crash();
     }
     UnityEngine::AudioConfiguration audioConfig = AudioSettings::GetConfiguration();
-    audioConfig.dspBufferSize = 2048;
+    audioConfig.dspBufferSize = 128;
     using ResetMethodDef = function_ptr_t<bool, AudioConfiguration>;
-    static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::Reset"));
+    static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::SetConfiguration_Injected"));
     Reset(audioConfig);
 }
 
