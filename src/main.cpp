@@ -95,15 +95,25 @@ MAKE_HOOK_MATCH(BombNoteController_HandleWasCutBySaber, &BombNoteController::Han
 MAKE_HOOK_MATCH(HandleSwingFinish, &GlobalNamespace::CutScoreBuffer::HandleSaberSwingRatingCounterDidFinish, void, GlobalNamespace::CutScoreBuffer* self, ISaberSwingRatingCounter* counter) {
     HandleSwingFinish(self, counter);
     if(!getModConfig().Active.GetValue() || !getModConfig().CrashOn115.GetValue()) return;
-    int score = self->dyn__afterCutScore() + self->dyn__beforeCutScore() + self->dyn__centerDistanceCutScore();
-    auto *noteScoreDefinition = self->dyn__noteScoreDefinition();
-    int maxCutScore = noteScoreDefinition->dyn_maxAfterCutScore() + noteScoreDefinition->dyn_maxBeforeCutScore() + noteScoreDefinition->dyn_maxCenterDistanceCutScore();
+    int score = self->afterCutScore + self->beforeCutScore + self->centerDistanceCutScore;
+    auto *noteScoreDefinition = self->noteScoreDefinition;
+    int maxCutScore = noteScoreDefinition->maxAfterCutScore + noteScoreDefinition->maxBeforeCutScore + noteScoreDefinition->maxCenterDistanceCutScore;
     if(score == maxCutScore) Crash();
 }
 
 MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedscore, int maxscore, int maxmodfifiedscore) {
     RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank(self, score, modifiedscore, maxscore, maxmodfifiedscore);
     if(getModConfig().Active.GetValue() && getModConfig().PercentageActive.GetValue() && self->get_relativeScore() < getModConfig().Percentage.GetValue() / 100) Crash();
+}
+
+MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressMenuButton, &PauseController::HandlePauseMenuManagerDidPressMenuButton, void, PauseController* self) {
+    PauseController_HandlePauseMenuManagerDidPressMenuButton(self);
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnPause.GetValue()) Crash();
+}
+
+MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &PauseController::HandlePauseMenuManagerDidPressContinueButton, void, PauseController* self) {
+    PauseController_HandlePauseMenuManagerDidPressContinueButton(self);
+    if(getModConfig().Active.GetValue() && getModConfig().CrashOnUnpause.GetValue()) Crash();
 }
 
 MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused, bool useTestNoteCutSoundEffects) {
@@ -136,16 +146,20 @@ MAKE_HOOK_MATCH(SceneManager_ActiveSceneChanged, &UnityEngine::SceneManagement::
         if(getModConfig().CrashOnOver5PerBattery.GetValue() && GlobalNamespace::OVRPlugin::OVRP_1_1_0::ovrp_GetSystemBatteryLevel() > getModConfig().BatteryThreshold.GetValue() / 100) Crash();
         if(getModConfig().CrashOnNE.GetValue() && Modloader::getMods().find("noodleextensions") == Modloader::getMods().end()) Crash();
     }
-    UnityEngine::AudioConfiguration audioConfig = AudioSettings::GetConfiguration();
-    audioConfig.dspBufferSize = 128;
-    using ResetMethodDef = function_ptr_t<bool, AudioConfiguration>;
-    static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::SetConfiguration_Injected"));
-    Reset(audioConfig);
+    /*
+    if(getModConfig().AudioFix.GetValue()) {
+        UnityEngine::AudioConfiguration audioConfig = AudioSettings::GetConfiguration();
+        audioConfig.dspBufferSize = getModConfig().AudioBuffer.GetValue();
+        using ResetMethodDef = function_ptr_t<bool, AudioConfiguration>;
+        static ResetMethodDef Reset = reinterpret_cast<ResetMethodDef>(il2cpp_functions::resolve_icall("UnityEngine.AudioSettings::SetConfiguration_Injected"));
+        Reset(audioConfig);
+    }
+    */
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* result, IReadonlyBeatmapData* beatmap, IDifficultyBeatmap* bm, bool practice, bool newHighScore) {
     ResultsViewController_Init(self, result, beatmap, bm, practice, newHighScore);
-    if(getModConfig().Active.GetValue() && ((getModConfig().CrashOnNotFullCombo.GetValue() && !result->dyn_fullCombo()) || (getModConfig().CrashOnNewHighscore.GetValue() && self->dyn__newHighScore()))) Crash();
+    if(getModConfig().Active.GetValue() && ((getModConfig().CrashOnNotFullCombo.GetValue() && !result->fullCombo) || (getModConfig().CrashOnNewHighscore.GetValue() && self->newHighScore))) Crash();
 }
 
 MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView::RefreshContent, void, StandardLevelDetailView* self) {

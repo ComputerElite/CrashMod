@@ -35,6 +35,14 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
         self->get_gameObject()->AddComponent<Touchable*>();
         GameObject* container = BeatSaberUI::CreateScrollableSettingsContainer(self->get_transform());
 
+        // AudioFix
+        //QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().AudioFix)->get_gameObject(), "Enable and disable the BT audio fix");
+
+        //QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementInt(container->get_transform(), getModConfig().AudioBuffer, 128, 0, 0xFFFFF)->get_gameObject(), "Set the buffer size for the BT audio fix");
+
+        // Active
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().Active)->get_gameObject(), "Why would you want to disable it at all?");
+
         // Active
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().Active)->get_gameObject(), "Why would you want to disable it at all?");
 
@@ -96,18 +104,10 @@ void DidActivate(ViewController* self, bool firstActivation, bool addedToHierarc
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnNE)->get_gameObject(), "Crash if you got Noodle Extensions installed");
 
         // CrashOnPause
-        /*
-        auto CrashOnPauseChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
-                   classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnPauseChange);
-        UnityEngine::UI::Toggle* CrashOnPause = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on Pause", getConfig().config["CrashOnPause"].GetBool(), CrashOnPauseChange);
-        QuestUI::BeatSaberUI::AddHoverHint(CrashOnPause->get_gameObject(), "Crashes the game when you pause it");
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnPause)->get_gameObject(), "Crash if you pause the game");
 
         // CrashOnUnpause
-        auto CrashOnUnpauseChange = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
-                   classof(UnityEngine::Events::UnityAction_1<bool>*), this, onCrashOnUnpauseChange);
-        UnityEngine::UI::Toggle* CrashOnUnpause = QuestUI::BeatSaberUI::CreateToggle(container->get_transform(), "Crash on Resume", getConfig().config["CrashOnUnpause"].GetBool(), CrashOnUnpauseChange);
-        QuestUI::BeatSaberUI::AddHoverHint(CrashOnUnpause->get_gameObject(), "Crashes the game when you resume.");
-        */
+        QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueToggle(container->get_transform(), getModConfig().CrashOnUnpause)->get_gameObject(), "Crash if you unpause the game");
        
         // OnCrashAction
         QuestUI::BeatSaberUI::AddHoverHint(AddConfigValueIncrementInt(container->get_transform(), getModConfig().OnCrashAction, 1, 0, 1)->get_gameObject(), "Why would you even want to do that? (0 = Crash, 1 = Quit)");
