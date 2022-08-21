@@ -1,0 +1,16 @@
+{
+  "_QPVersion": "0.1.1",
+  "id": "CrashMod",
+  "name": "CrashMod",
+  "version": "0.8.0",
+  "author": "ComputerElite",
+  "packageId": "com.beatgames.beatsaber",
+  "coverImage": "cover.png",
+  "packageVersion": "1.24.0",
+  "modFiles": [
+  ],
+  "libraryFiles": [
+  ],
+  "dependencies": [],
+  "fileCopies": []
+}

@@ -1,6 +1,6 @@
 # Crash Mod
 
-Crashes the game if you are bad and good
+Crashes the game if you are bad
 
 ## Credits
 

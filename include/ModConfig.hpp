@@ -3,7 +3,7 @@
 
 DECLARE_CONFIG(ModConfig,
 
-    CONFIG_VALUE(Active, bool, "Active", true);
+    CONFIG_VALUE(Active, bool, "Active", false); // Change back to true once bt audio issue is in QuestSounds
     CONFIG_VALUE(Percentage, float, "Percentage", 95.0f);
     CONFIG_VALUE(PercentageActive, bool, "Percentage Crash Active", true);
     CONFIG_VALUE(MissCrash, bool, "Crash on Miss", true);
@@ -25,6 +25,11 @@ DECLARE_CONFIG(ModConfig,
     CONFIG_VALUE(LowBPMValue, float, "Min BPM", 100.0f);
     CONFIG_VALUE(HighBPMValue, float, "Max BPM", 200.0f);
     CONFIG_VALUE(CrashOn115, bool, "Crash on 115", true);
+    CONFIG_VALUE(CrashOnNE, bool, "Crash on NE", false);
+    CONFIG_VALUE(CrashOnBomb, bool, "Crash on Bomb Cut", true);
+
+    CONFIG_VALUE(AudioFix, bool, "Enable BT Audio Fix", true);
+    CONFIG_VALUE(AudioBuffer, int, "Audio Buffer", 128);
 
     CONFIG_INIT_FUNCTION(
         CONFIG_INIT_VALUE(Active);
@@ -49,5 +54,10 @@ DECLARE_CONFIG(ModConfig,
         CONFIG_INIT_VALUE(LowBPMValue);
         CONFIG_INIT_VALUE(HighBPMValue);
         CONFIG_INIT_VALUE(CrashOn115);
+        CONFIG_INIT_VALUE(CrashOnNE);
+        CONFIG_INIT_VALUE(CrashOnBomb);
+
+        CONFIG_INIT_VALUE(AudioFix);
+        CONFIG_INIT_VALUE(AudioBuffer);
     )
 );
