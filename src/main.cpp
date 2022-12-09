@@ -30,6 +30,7 @@
 #include "GlobalNamespace/BombNoteController.hpp"
 #include "GlobalNamespace/Saber.hpp"
 #include "GlobalNamespace/IReadonlyCutScoreBuffer.hpp"
+#include "GlobalNamespace/BeatmapDataCache.hpp"
 #include "UnityEngine/AudioConfiguration.hpp"
 #include "UnityEngine/AudioSettings.hpp"
 
@@ -57,7 +58,6 @@ using namespace UnityEngine;
 using namespace QuestUI;
 
 static ModInfo modInfo;
-DEFINE_CONFIG(ModConfig);
 
 Logger& getLogger() {
     static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
@@ -116,8 +116,8 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &P
     if(getModConfig().Active.GetValue() && getModConfig().CrashOnUnpause.GetValue()) Crash();
 }
 
-MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused, bool useTestNoteCutSoundEffects) {
-    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, startPaused, useTestNoteCutSoundEffects);
+MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, StringW gameMode, IDifficultyBeatmap* dbm, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings, ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings, StringW backButtonText, bool startPaused, bool useTestNoteCutSoundEffects, BeatmapDataCache* beatmapDataCache) {
+    StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, dbm, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, startPaused, useTestNoteCutSoundEffects, beatmapDataCache);
     if(getModConfig().Active.GetValue()) {
         if(getModConfig().CrashOnPlay.GetValue() || getModConfig().CrashOnNoFailOn.GetValue() && gameplayModifiers->get_noFailOn0Energy()) Crash();
         if(getModConfig().CrashOnHighBPM.GetValue() && bpm > getModConfig().HighBPMValue.GetValue() || getModConfig().CrashOnLowBPM.GetValue() && bpm < getModConfig().LowBPMValue.GetValue()) Crash();
