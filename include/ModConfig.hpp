@@ -30,34 +30,4 @@ DECLARE_CONFIG(ModConfig,
 
     CONFIG_VALUE(AudioFix, bool, "Enable BT Audio Fix", true);
     CONFIG_VALUE(AudioBuffer, int, "Audio Buffer", 128);
-
-    CONFIG_INIT_FUNCTION(
-        CONFIG_INIT_VALUE(Active);
-        CONFIG_INIT_VALUE(Percentage);
-        CONFIG_INIT_VALUE(PercentageActive);
-        CONFIG_INIT_VALUE(MissCrash);
-        CONFIG_INIT_VALUE(CrashOnPlay);
-        CONFIG_INIT_VALUE(CrashOnTurn);
-        CONFIG_INIT_VALUE(CrashOnPause);
-        CONFIG_INIT_VALUE(CrashOnUnpause);
-        CONFIG_INIT_VALUE(CrashOnNotFullCombo);
-        CONFIG_INIT_VALUE(CrashOnNewHighscore);
-        CONFIG_INIT_VALUE(CrashCounter);
-        CONFIG_INIT_VALUE(OnCrashAction);
-        CONFIG_INIT_VALUE(CrashOnNoFailOn);
-        CONFIG_INIT_VALUE(CrashOnOver5PerBattery);
-        CONFIG_INIT_VALUE(CrashOnGoodCut);
-        CONFIG_INIT_VALUE(BatteryThreshold);
-        CONFIG_INIT_VALUE(CrashOnFirstBlockMiss);
-        CONFIG_INIT_VALUE(CrashOnLowBPM);
-        CONFIG_INIT_VALUE(CrashOnHighBPM);
-        CONFIG_INIT_VALUE(LowBPMValue);
-        CONFIG_INIT_VALUE(HighBPMValue);
-        CONFIG_INIT_VALUE(CrashOn115);
-        CONFIG_INIT_VALUE(CrashOnNE);
-        CONFIG_INIT_VALUE(CrashOnBomb);
-
-        CONFIG_INIT_VALUE(AudioFix);
-        CONFIG_INIT_VALUE(AudioBuffer);
-    )
-);
+)
